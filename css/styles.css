@@ -1,0 +1,141 @@
+@import url("reset.css");
+@import url("base.css");
+@import url("header.css");
+@import url("hero.css");
+@import url("products.css");
+@import url("cashback.css");
+@import url("services.css");
+@import url("offers.css");
+@import url("about.css");
+@import url("footer.css");
+
+@media (min-width: 1440px) { .container { max-width: 1320px; } }
+@media (min-width: 1920px) {
+  .container { max-width: 1440px; }
+  .section { padding: 72px 0; }
+  .hero { padding: 32px 0 72px; }
+  .section__title { font-size: var(--font-huge); }
+  .hero__title { font-size: 42px; }
+}
+@media (max-width: 1100px) {
+  .header__nav { gap: 16px; }
+  .header__nav-link { font-size: var(--font-sm); }
+  .header__actions .btn { padding: 10px 14px; font-size: var(--font-sm); }
+  .hero__deposit { padding: 26px; }
+  .hero__title { font-size: 30px; }
+}
+@media (max-width: 1024px) {
+  .products { grid-template-columns: repeat(3, 1fr); }
+  .section__title { font-size: 28px; }
+}
+@media (max-width: 900px) {
+  .header__burger { display: flex; }
+  .header__nav {
+    position: fixed; top: 64px; left: 0; width: 100%;
+    height: calc(100vh - 64px); background: var(--color-black);
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    transform: translateX(100%); transition: transform 0.25s;
+    padding: 20px 16px 60px; z-index: 1001; box-sizing: border-box;
+    flex-direction: column; gap: 0;
+  }
+  .header__nav.is-open { transform: translateX(0); }
+  .header__nav-link { padding: 14px 0; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .header__actions .btn--ghost { display: none; }
+  .nav__list { display: none; }
+  .mobile-nav-container { display: block; }
+  .dropdown, .overlay { display: none; }
+
+  .hero__grid { grid-template-columns: repeat(6, 1fr); }
+  .hero__deposit { grid-column: span 6; grid-row: span 1; min-height: 300px; }
+  .hero__credit, .hero__invest { grid-column: span 3; grid-row: auto; }
+  .hero__cash, .hero__free { grid-column: span 3; }
+  .hero__deposit-text { max-width: 55%; }
+  .hero__percent { width: 55%; }
+
+  .cashback { grid-template-columns: 1fr; min-height: auto; }
+  .cashback__phone-wrap { margin: 0 -48px -48px; padding: 60px 30px 30px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  .phone { width: 100%; max-width: 280px; border-radius: 24px; }
+
+  .services { grid-template-columns: 1fr; }
+  .service--currency, .service--row, .service--support, .service--samoz {
+    grid-row: auto !important; grid-column: auto !important;
+  }
+
+  .about { grid-template-columns: 1fr; grid-template-rows: auto; min-height: auto; }
+  .about__card--employer { grid-row: auto; min-height: 240px; }
+}
+@media (max-width: 768px) {
+  .container { padding: 0 16px; }
+  .section { padding: 32px 0; }
+  .section__title { font-size: var(--font-lg); }
+
+  .products { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .product { padding: 16px; min-height: 180px; }
+  .product__art { height: 100px; }
+
+  .offers { grid-template-columns: 1fr; grid-template-rows: auto; }
+  .offer { min-height: 200px; }
+  .offer--cta { grid-column: span 1; min-height: 56px; }
+  .offer__art { width: 55%; height: 85%; }
+}
+@media (max-width: 600px) {
+  .hero { padding: 16px 0 32px; }
+  .hero__grid { gap: 10px; }
+  .hero__deposit { padding: 22px; min-height: 240px; }
+  .hero__deposit-text { max-width: 60%; }
+  .hero__title { font-size: var(--font-lg); }
+  .hero__sub { font-size: var(--font-sm); padding-bottom: 16px; }
+  .hero__btn { padding: 10px 16px; font-size: var(--font-sm); }
+  .hero__percent { width: 60%; opacity: .95; }
+  .hero__credit, .hero__invest { grid-column: span 6; min-height: 130px; }
+  .hero__cash, .hero__free { grid-column: span 3; }
+  .card__title { font-size: 18px; }
+  .card, .product, .service, .offer, .about__card { padding: 18px; border-radius: var(--radius-md); }
+
+  .about__card { padding: 22px; }
+  .about__title { font-size: 18px; }
+  .about__art { width: 50%; }
+}
+@media (max-width: 480px) {
+  .container { padding: 0 12px; }
+  .section { padding: 24px 0; }
+  .section__title { font-size: 20px; }
+
+  .header__inner { gap: 8px; padding: 12px 16px; min-height: 56px; }
+  .header__icon-btn { width: 36px; height: 36px; }
+  .header__actions { gap: 8px; }
+  .header__actions .btn { padding: 9px 12px; font-size: 12px; }
+
+  .cashback { padding: 24px; border-radius: 20px; }
+  .cashback__title { font-size: var(--font-lg); }
+  .cashback__desc { font-size: 12px; }
+  .cashback__phone-wrap { margin: 0 -24px -24px; padding: 56px 20px 20px; }
+  .phone { max-width: 240px; padding: 12px 12px 16px; }
+
+  .service { padding: 16px; }
+  .service--row { padding: 14px 16px; min-height: 80px; }
+  .svc-icon { width: 44px; height: 44px; }
+  .rates td:first-child { gap: 8px; }
+  .flag { width: 24px; height: 24px; }
+
+  .offer { padding: 20px; }
+  .offer__desc { max-width: 70%; font-size: 12px; }
+}
+@media (max-width: 380px) {
+  .hero__title { font-size: 18px; }
+  .card__title { font-size: 16px; }
+  .card__title-sm { font-size: var(--font-sm); }
+  .hero__deposit-text { max-width: 100%; }
+  .hero__percent { opacity: .35; }
+  .products { grid-template-columns: 1fr; }
+}
+@media (max-width: 360px) {
+  .header__inner { gap: 6px; padding: 10px 12px; }
+  .header__actions .btn { padding: 8px 10px; font-size: var(--font-xs); }
+  .logo-mark { width: 28px; height: 28px; }
+  .hero__deposit { padding: 18px; min-height: 200px; }
+  .card, .product, .service, .offer, .about__card { padding: 14px; }
+  .card__title { font-size: 14px; }
+  .card__title-sm { font-size: 12px; }
+  .product__title, .offer__title, .about__title { font-size: 15px; }
+}

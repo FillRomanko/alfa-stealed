@@ -1,0 +1,11 @@
+﻿*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px; line-height: 1.4; color: #0a0a0a; background: #f3f4f5;
+    min-width: 320px; -webkit-font-smoothing: antialiased; padding-top: 64px;
+}
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+ul { list-style: none; }
+img, svg { display: block; max-width: 100%; }

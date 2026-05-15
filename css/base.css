@@ -1,0 +1,57 @@
+﻿:root {
+    --color-black: #0a0a0a;
+    --color-white: #fff;
+    --color-red: #ef3124;
+    --color-red-hover: #d92414;
+    --color-bg: #f3f4f5;
+    --color-bg-alt: #ebecee;
+    --color-text-muted: #6b7280;
+    --color-text-light: rgba(255,255,255,0.7);
+    --color-border: rgba(255,255,255,0.08);
+    --radius-sm: 12px;
+    --radius-md: 18px;
+    --radius-lg: 22px;
+    --radius-xl: 28px;
+    --radius-full: 999px;
+    --shadow-drop: 0 12px 28px rgba(0,0,0,0.3);
+    --font-xs: 11px;
+    --font-sm: 13px;
+    --font-md: 16px;
+    --font-lg: 22px;
+    --font-xl: 32px;
+    --font-huge: 36px;
+    --transition: .15s ease;
+}
+.container {
+    width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 24px;
+}
+.section { padding: 56px 0; background: var(--color-bg); }
+.section--products,
+.section--cashback,
+.section--services,
+.section--offers,
+.section--about { background: var(--color-white); }
+.section__title {
+    font-size: var(--font-xl); font-weight: 700; letter-spacing: -0.02em;
+    color: var(--color-black); line-height: 1.1;
+}
+.section__head {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 16px; margin-bottom: 24px;
+}
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0;
+}
+
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 20px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+    white-space: nowrap; transition: transform var(--transition), background var(--transition), opacity var(--transition);
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); opacity: .85; }
+.btn--primary { background: var(--color-red); color: var(--color-white); }
+.btn--primary:hover { background: var(--color-red-hover); }
+.btn--ghost { background: rgba(255,255,255,.08); color: var(--color-white); }
+.btn--ghost:hover { background: rgba(255,255,255,.15); }
