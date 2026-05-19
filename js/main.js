@@ -1,294 +1,310 @@
-let navigationData = {};
-let currentMobileCategory = 'private-clients';
+﻿(function(window, document) {
+    'use strict';
 
-
-async function loadNavigation() {
-  const response = await fetch('data/header.json');
-  navigationData = await response.json();
-  buildDesktopMenu();
-  initDesktopDropdown();
-  buildMobileNavigation();
-  toggleMobileVisibility();
-  window.addEventListener('resize', toggleMobileVisibility);
-}
-
-
-function buildDesktopMenu() {
-  const navList = document.querySelector('.nav__list');
-  navList.innerHTML = '';
-  const menu = navigationData.menuMobile || [];
-  menu.forEach(item => {
-    const li = document.createElement('li');
-    li.className = 'nav__item';
-    li.setAttribute('data-nav-item', item.key);
-    const link = document.createElement('a');
-    link.href = '#';
-    link.className = 'header__nav-link';
-    link.textContent = item.label;
-    const arrow = document.createElement('span');
-    arrow.className = 'dropdown-arrow';
-    li.appendChild(link);
-    li.appendChild(arrow);
-    navList.appendChild(li);
-  });
-}
-
-
-function initDesktopDropdown() {
-  const navItems = document.querySelectorAll('.nav__item');
-  const dropdown = document.querySelector('.dropdown');
-  const overlay = document.querySelector('.overlay');
-  const titlesContainer = document.querySelector('[data-nav-titles]');
-  const contentContainer = document.querySelector('[data-nav-content]');
-
-  let activeItem = null;
-  let hideTimeout = null;
-
-  function showDropdown(item) {
-    if (hideTimeout) clearTimeout(hideTimeout);
-    if (activeItem === item && dropdown.classList.contains('active')) return;
-
-    const key = item.getAttribute('data-nav-item');
-    const sections = navigationData[key];
-    if (!sections || sections.length === 0) {
-      dropdown.classList.remove('active');
-      overlay.classList.remove('active');
-      activeItem = null;
-      return;
-    }
-
-    titlesContainer.innerHTML = '';
-    sections.forEach((section, idx) => {
-      const titleLink = document.createElement('a');
-      titleLink.textContent = section.title;
-      titleLink.setAttribute('data-section-index', idx);
-      titlesContainer.appendChild(titleLink);
-    });
-
-    renderDesktopContent(sections[0], contentContainer);
-
-    const titles = titlesContainer.querySelectorAll('a');
-    titles.forEach(title => {
-      title.addEventListener('pointerenter', () => {
-        const idx = title.getAttribute('data-section-index');
-        if (idx && sections[idx]) renderDesktopContent(sections[idx], contentContainer);
-      });
-    });
-
-    dropdown.classList.add('active');
-    overlay.classList.add('active');
-    activeItem = item;
-  }
-
-  function hideDropdown() {
-    if (hideTimeout) clearTimeout(hideTimeout);
-    hideTimeout = setTimeout(() => {
-      dropdown.classList.remove('active');
-      overlay.classList.remove('active');
-      activeItem = null;
-    }, 150);
-  }
-
-  function renderDesktopContent(section, container) {
-    container.innerHTML = '';
-    if (!section.sections || section.sections.length === 0) {
-      container.innerHTML = '<div style="color: #fff; padding: 20px;">Нет доступных подразделов</div>';
-      return;
-    }
-    section.sections.forEach(sub => {
-      const div = document.createElement('div');
-      div.className = 'subsection';
-      const title = document.createElement('div');
-      title.className = 'subsectionTitle';
-      title.textContent = sub.title;
-      div.appendChild(title);
-      if (sub.links && sub.links.length) {
-        sub.links.forEach(link => {
-          const a = document.createElement('a');
-          a.textContent = link.label;
-          a.href = link.href;
-          div.appendChild(a);
-        });
-      }
-      container.appendChild(div);
-    });
-  }
-
-  navItems.forEach(item => {
-    item.addEventListener('pointerenter', () => showDropdown(item));
-    item.addEventListener('pointerleave', hideDropdown);
-  });
-  dropdown.addEventListener('pointerenter', () => { if (hideTimeout) clearTimeout(hideTimeout); });
-  dropdown.addEventListener('pointerleave', hideDropdown);
-  overlay.addEventListener('pointerenter', hideDropdown);
-}
-
-
-function buildMobileNavigation() {
-  const switchContainer = document.querySelector('.mobile-switch');
-  const sectionsList = document.querySelector('.mobile-sections-list');
-  const menuMobile = navigationData.menuMobile || [];
-  switchContainer.innerHTML = '';
-  menuMobile.forEach(item => {
-    const btn = document.createElement('button');
-    btn.className = 'mobile-switch-btn';
-    if (item.key === currentMobileCategory) btn.classList.add('active');
-    btn.textContent = item.label;
-    btn.setAttribute('data-category', item.key);
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.mobile-switch-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentMobileCategory = item.key;
-      renderMobileSectionsList(currentMobileCategory);
-    });
-    switchContainer.appendChild(btn);
-  });
-  renderMobileSectionsList(currentMobileCategory);
-}
-
-function renderMobileSectionsList(categoryKey) {
-  const sectionsList = document.querySelector('.mobile-sections-list');
-  const sections = navigationData[categoryKey] || [];
-  sectionsList.innerHTML = '';
-  sections.forEach(section => {
-    const itemDiv = document.createElement('div');
-    itemDiv.className = 'mobile-section-item';
-    const header = document.createElement('div');
-    header.className = 'mobile-section-header';
-    header.innerHTML = `<span>${escapeHtml(section.title)}</span><span class="arrow"></span>`;
-    header.addEventListener('click', () => {
-      document.querySelectorAll('.mobile-section-item.open').forEach(el => {
-        if (el !== itemDiv) el.classList.remove('open');
-      });
-      itemDiv.classList.toggle('open');
-    });
-    const submenu = document.createElement('div');
-    submenu.className = 'mobile-submenu-items';
-    if (section.sections && section.sections.length) {
-      section.sections.forEach(sub => {
-        const subTitle = document.createElement('div');
-        subTitle.className = 'mobile-subsection-title';
-        subTitle.textContent = sub.title;
-        submenu.appendChild(subTitle);
-        if (sub.links) {
-          sub.links.forEach(link => {
-            const linkEl = document.createElement('a');
-            linkEl.className = 'mobile-link';
-            linkEl.href = link.href;
-            linkEl.textContent = link.label;
-            submenu.appendChild(linkEl);
-          });
+    class DataFetcher {
+        constructor(basePath = 'data') {
+            this.base = basePath;
+            this.cache = new Map();
         }
-      });
+
+        async get(filename) {
+            if (this.cache.has(filename)) return this.cache.get(filename);
+            const url = `${this.base}/${filename}.json`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            this.cache.set(filename, data);
+            return data;
+        }
+    }
+
+    class MenuController {
+        constructor(fetcher, selectors) {
+            this.fetcher = fetcher;
+            this.selectors = selectors;
+            this.menuData = null;
+            this.activeMobileCat = 'private-clients';
+            this.hideTimer = null;
+            this.init();
+        }
+
+        async init() {
+            this.menuData = await this.fetcher.get('header');
+            this.renderDesktopNav();
+            this.initMegaMenu();
+            this.buildMobileNav();
+            this.handleResize();
+            window.addEventListener('resize', () => this.handleResize());
+        }
+
+        renderDesktopNav() {
+            const container = document.querySelector(this.selectors.navLinks);
+            if (!container) return;
+            const items = this.menuData.menuMobile || [];
+            container.innerHTML = items.map(item => `
+                <li>
+                    <a href="#" data-navkey="${item.key}">${this.escape(item.label)}</a>
+                </li>
+            `).join('');
+        }
+
+        initMegaMenu() {
+            const navLinks = document.querySelectorAll(`${this.selectors.navLinks} a`);
+            const mega = document.querySelector(this.selectors.megaMenu);
+            const overlay = document.querySelector(this.selectors.overlay);
+            const titlesBox = document.querySelector(this.selectors.megaTitles);
+            const contentBox = document.querySelector(this.selectors.megaContent);
+
+            if (!mega || !overlay) return;
+
+            const showPanel = (key) => {
+                if (this.hideTimer) clearTimeout(this.hideTimer);
+                const sections = this.menuData[key];
+                if (!sections?.length) return;
+                titlesBox.innerHTML = '';
+                contentBox.innerHTML = '';
+                sections.forEach((sec, idx) => {
+                    const link = document.createElement('a');
+                    link.textContent = sec.title;
+                    link.dataset.idx = idx;
+                    titlesBox.appendChild(link);
+                });
+                this.renderMegaContent(sections[0], contentBox);
+                titlesBox.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('mouseenter', (e) => {
+                        const idx = parseInt(e.target.dataset.idx);
+                        if (sections[idx]) this.renderMegaContent(sections[idx], contentBox);
+                    });
+                });
+                mega.classList.add('active');
+                overlay.classList.add('active');
+            };
+
+            const hidePanel = () => {
+                this.hideTimer = setTimeout(() => {
+                    mega.classList.remove('active');
+                    overlay.classList.remove('active');
+                }, 150);
+            };
+
+            navLinks.forEach(link => {
+                link.addEventListener('mouseenter', () => showPanel(link.dataset.navkey));
+                link.addEventListener('mouseleave', hidePanel);
+            });
+            mega.addEventListener('mouseenter', () => clearTimeout(this.hideTimer));
+            mega.addEventListener('mouseleave', hidePanel);
+            overlay.addEventListener('click', hidePanel);
+        }
+
+        renderMegaContent(section, container) {
+            container.innerHTML = '';
+            if (!section.sections) return;
+            section.sections.forEach(sub => {
+                const div = document.createElement('div');
+                div.className = 'mega-subsection';
+                div.innerHTML = `<h4>${this.escape(sub.title)}</h4>`;
+                if (sub.links) {
+                    sub.links.forEach(link => {
+                        div.innerHTML += `<a href="${link.href}">${this.escape(link.label)}</a>`;
+                    });
+                }
+                container.appendChild(div);
+            });
+        }
+
+        buildMobileNav() {
+            const switchBox = document.querySelector(this.selectors.mobileSwitch);
+            const accordionBox = document.querySelector(this.selectors.mobileAccordion);
+            if (!switchBox || !accordionBox) return;
+
+            const menuItems = this.menuData.menuMobile || [];
+            switchBox.innerHTML = '';
+            menuItems.forEach(item => {
+                const btn = document.createElement('button');
+                btn.textContent = item.label;
+                btn.dataset.cat = item.key;
+                if (item.key === this.activeMobileCat) btn.classList.add('active');
+                btn.addEventListener('click', () => {
+                    switchBox.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.activeMobileCat = item.key;
+                    this.renderMobileAccordion(accordionBox, this.activeMobileCat);
+                });
+                switchBox.appendChild(btn);
+            });
+            this.renderMobileAccordion(accordionBox, this.activeMobileCat);
+        }
+
+        renderMobileAccordion(container, cat) {
+            const sections = this.menuData[cat] || [];
+            container.innerHTML = '';
+            sections.forEach(sec => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'accordion-item';
+                const header = document.createElement('div');
+                header.className = 'accordion-header';
+                header.innerHTML = `<span>${this.escape(sec.title)}</span><span>▼</span>`;
+                header.addEventListener('click', () => itemDiv.classList.toggle('open'));
+                const submenu = document.createElement('div');
+                submenu.className = 'submenu-items';
+                if (sec.sections) {
+                    sec.sections.forEach(sub => {
+                        submenu.innerHTML += `<div style="font-weight:600;margin-top:12px">${this.escape(sub.title)}</div>`;
+                        if (sub.links) {
+                            sub.links.forEach(link => {
+                                submenu.innerHTML += `<a href="${link.href}" style="display:block;padding:6px 0 6px 16px;color:#aaa">${this.escape(link.label)}</a>`;
+                            });
+                        }
+                    });
+                }
+                itemDiv.appendChild(header);
+                itemDiv.appendChild(submenu);
+                container.appendChild(itemDiv);
+            });
+        }
+
+        handleResize() {
+            const isMobile = window.innerWidth <= 900;
+            const navBlock = document.querySelector(this.selectors.navLinks);
+            const mobileBlock = document.querySelector(this.selectors.mobileBlock);
+            if (!navBlock || !mobileBlock) return;
+            if (isMobile) {
+                navBlock.style.display = 'none';
+                mobileBlock.style.display = 'block';
+            } else {
+                navBlock.style.display = 'flex';
+                mobileBlock.style.display = 'none';
+                const mega = document.querySelector(this.selectors.megaMenu);
+                const overlay = document.querySelector(this.selectors.overlay);
+                if (mega) mega.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
+            }
+        }
+
+        escape(str) {
+            return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+        }
+    }
+
+    class ProductsController {
+        constructor(fetcher, containerId, tabGroupSelector) {
+            this.fetcher = fetcher;
+            this.container = document.getElementById(containerId);
+            this.tabGroup = document.querySelector(tabGroupSelector);
+            this.products = [];
+            this.init();
+        }
+
+        async init() {
+            this.products = await this.fetcher.get('products');
+            this.render('all');
+            this.bindTabs();
+        }
+
+        render(category) {
+            if (!this.container) return;
+            const filtered = this.products.filter(p => p.categories.includes(category));
+            this.container.innerHTML = filtered.map(p => `
+                <div class="product-card">
+                    <div class="product-card__title">${this.escape(p.title)}</div>
+                    <div class="product-card__desc">${this.escape(p.desc)}</div>
+                    <div class="product-card__icon">${p.svg || '📦'}</div>
+                </div>
+            `).join('');
+        }
+
+        bindTabs() {
+            if (!this.tabGroup) return;
+            const tabs = this.tabGroup.querySelectorAll('.tab-btn');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('is-active'));
+                    tab.classList.add('is-active');
+                    const category = tab.dataset.tab;
+                    this.render(category);
+                });
+            });
+        }
+
+        escape(str) {
+            return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
+        }
+    }
+
+    class BurgerManager {
+        constructor(burgerId, navId, overlayClass = 'mobile-overlay') {
+            this.burger = document.getElementById(burgerId);
+            this.nav = document.getElementById(navId);
+            this.overlay = null;
+            this.init();
+        }
+
+        init() {
+            if (!this.burger || !this.nav) return;
+            this.createOverlay();
+            this.burger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleMenu();
+            });
+            this.overlay?.addEventListener('click', () => this.closeMenu());
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') this.closeMenu(); });
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 900 && this.nav.classList.contains('open')) this.closeMenu();
+            });
+        }
+
+        createOverlay() {
+            let ov = document.querySelector('.mobile-overlay');
+            if (!ov) {
+                ov = document.createElement('div');
+                ov.className = 'mobile-overlay';
+                document.body.appendChild(ov);
+            }
+            this.overlay = ov;
+        }
+
+        toggleMenu() {
+            this.nav.classList.contains('open') ? this.closeMenu() : this.openMenu();
+        }
+
+        openMenu() {
+            this.nav.classList.add('open');
+            this.burger.classList.add('open');
+            this.overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        closeMenu() {
+            this.nav.classList.remove('open');
+            this.burger.classList.remove('open');
+            this.overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    async function startup() {
+        const fetcher = new DataFetcher('data');
+        const selectors = {
+            navLinks: '.nav-links',
+            megaMenu: '.mega-menu',
+            overlay: '.overlay-bg',
+            megaTitles: '[data-mega-titles]',
+            megaContent: '[data-mega-content]',
+            mobileSwitch: '.mobile-switch-buttons',
+            mobileAccordion: '.mobile-accordion-list',
+            mobileBlock: '.nav-mobile-block'
+        };
+        // Запускаем модули параллельно
+        const menu = new MenuController(fetcher, selectors);
+        const products = new ProductsController(fetcher, 'productList', '[data-tab-group="products"]');
+        const burger = new BurgerManager('burgerBtn', 'navPrimary');
+
+        await Promise.all([menu.init(), products.init()]);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startup);
     } else {
-      submenu.innerHTML = '<div class="mobile-link">Нет ссылок</div>';
+        startup();
     }
-    itemDiv.appendChild(header);
-    itemDiv.appendChild(submenu);
-    sectionsList.appendChild(itemDiv);
-  });
-}
-
-function escapeHtml(str) {
-  return str.replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
-}
-
-
-function toggleMobileVisibility() {
-  const isMobile = window.innerWidth <= 900;
-  const navList = document.querySelector('.nav__list');
-  const mobileContainer = document.querySelector('.mobile-nav-container');
-  if (isMobile) {
-    navList.style.display = 'none';
-    mobileContainer.style.display = 'block';
-  } else {
-    navList.style.display = 'flex';
-    mobileContainer.style.display = 'none';
-    const dropdown = document.querySelector('.dropdown');
-    const overlay = document.querySelector('.overlay');
-    dropdown.classList.remove('active');
-    overlay.classList.remove('active');
-  }
-}
-
-
-const burger = document.getElementById('burger');
-const navMenu = document.getElementById('nav');
-burger.addEventListener('click', () => {
-  burger.classList.toggle('is-open');
-  navMenu.classList.toggle('is-open');
-  if (navMenu.classList.contains('is-open')) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  } else {
-    document.querySelectorAll('.mobile-section-item.open').forEach(el => el.classList.remove('open'));
-  }
-});
-
-
-const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('[data-nav-link]');
-window.addEventListener('scroll', () => {
-  let current = '';
-  const scrollPos = window.scrollY + 100;
-  sections.forEach(section => {
-    if (scrollPos >= section.offsetTop && scrollPos < section.offsetTop + section.offsetHeight) {
-      current = section.getAttribute('id');
-    }
-  });
-  navLinks.forEach(link => {
-    link.classList.remove('is-active');
-    if (link.getAttribute('href') === `#${current}`) {
-      link.classList.add('is-active');
-    }
-  });
-});
-
-
-let productsData = [];
-
-async function loadProducts() {
-  const response = await fetch('data/products.json');
-  productsData = await response.json();
-  renderProducts(productsData, 'all');
-}
-
-function renderProducts(products, activeCategory) {
-  const container = document.getElementById('products-grid');
-  const filtered = products.filter(p => p.categories.includes(activeCategory));
-  container.innerHTML = filtered.map(product => `
-    <a href="#" class="product" data-categories="${product.categories.join(' ')}">
-      <div class="product__text">
-        <h3 class="product__title">${product.title}</h3>
-        <p class="product__desc">${product.desc}</p>
-      </div>
-      <div class="product__art">
-        ${product.svg}
-      </div>
-    </a>
-  `).join('');
-}
-
-
-function initTabs() {
-  const tabsContainer = document.querySelector('[data-tabs="products"]');
-  const tabs = tabsContainer.querySelectorAll('[data-tab]');
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('is-active'));
-      tab.classList.add('is-active');
-      const category = tab.getAttribute('data-tab');
-      renderProducts(productsData, category);
-    });
-  });
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-  loadNavigation();
-  loadProducts().then(initTabs);
-});
+})(window, document);

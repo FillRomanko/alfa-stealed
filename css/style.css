@@ -1,0 +1,23 @@
+﻿@import url("reset.css");
+@import url("base.css");
+@import url("header.css");
+@import url("hero.css");
+@import url("products.css");
+@import url("cashback.css");
+@import url("services.css");
+@import url("offers.css");
+@import url("about.css");
+@import url("footer.css");
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 16px;
+    }
+    .section-title {
+        font-size: 24px;
+    }
+    .btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+}

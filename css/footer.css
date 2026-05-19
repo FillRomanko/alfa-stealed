@@ -1,5 +1,7 @@
-﻿.footer {
-    background: var(--color-black); color: rgba(255,255,255,.5);
-    padding: 32px 0; font-size: var(--font-sm);
+﻿.site-footer {
+    background: var(--color-bg-dark);
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 32px 0;
+    font-size: 13px;
 }
-.footer .container { text-align: center; }
